@@ -2,34 +2,52 @@ package pipelineexecutor
 
 import "fmt"
 
+// PipelineExecutor manages and executes pipelines consisting of multiple steps.
 type PipelineExecutor struct {
 	Pipelines map[string]Pipeline
 }
 
+// Pipeline represents a sequence of steps to be executed.
 type Pipeline struct {
-	Name  string
-	Key   string
-	Steps []Step
+	Name        string
+	Key         string
+	Steps       []Step
+	indexSearch map[string]int
 }
 
+// Step represents an individual step within a pipeline.
 type Step struct {
 	Name          string
 	DependsOnStep *int
 	Action        func(args ...any) *PipelineError
 }
 
+// PipelineError represents an error that occurs during pipeline execution.
 type PipelineError struct {
-	Error error
-	Step  string
+	Err  error
+	Step string
 }
 
+func (pe *PipelineError) Error() string {
+	return pe.Err.Error()
+}
+
+// NewPipelineExecutor creates and returns a new PipelineExecutor instance.
 func NewPipelineExecutor() *PipelineExecutor {
 	return &PipelineExecutor{
 		Pipelines: make(map[string]Pipeline),
 	}
 }
 
+// AddPipeline adds a new pipeline to the executor.
+// If a pipeline with the same key already exists, it will be overwritten.
 func (pe *PipelineExecutor) AddPipeline(pipeline Pipeline) {
+
+	pipeline.indexSearch = make(map[string]int)
+	for i, step := range pipeline.Steps {
+		pipeline.indexSearch[step.Name] = i
+	}
+
 	pe.Pipelines[pipeline.Key] = pipeline
 }
 
@@ -39,8 +57,8 @@ func (pe *Pipeline) executeStep(step Step, executedSteps map[int]bool, args ...a
 		depIndex := *step.DependsOnStep
 		if depIndex < 0 || depIndex >= len(pe.Steps) {
 			return &PipelineError{
-				Error: fmt.Errorf("invalid dependency index %d for step %s", depIndex, step.Name),
-				Step:  step.Name,
+				Err:  fmt.Errorf("invalid dependency index %d for step %s", depIndex, step.Name),
+				Step: step.Name,
 			}
 		}
 
@@ -61,17 +79,30 @@ func (pe *PipelineExecutor) ExecutePipeline(key, stepToRun string, args ...any) 
 	pipeline, exists := pe.Pipelines[key]
 	if !exists {
 		return &PipelineError{
-			Error: fmt.Errorf("pipeline with key %s not found", key),
-			Step:  "",
+			Err:  fmt.Errorf("pipeline with key %s not found", key),
+			Step: "",
 		}
 	}
 
-	totalSteps := len(pipeline.Steps)
+	startIndex := 0
+
+	if stepToRun != "" {
+		i, found := pipeline.indexSearch[stepToRun]
+		if !found {
+			return &PipelineError{
+				Err:  fmt.Errorf("step with name %s not found in pipeline %s", stepToRun, key),
+				Step: "",
+			}
+		}
+
+		startIndex = i
+	}
+
 	executedSteps := make(map[int]bool)
 
 	for i, step := range pipeline.Steps {
-		if stepToRun != "" && step.Name != stepToRun {
-			totalSteps--
+
+		if i < startIndex {
 			continue
 		}
 
@@ -79,13 +110,6 @@ func (pe *PipelineExecutor) ExecutePipeline(key, stepToRun string, args ...any) 
 			return err
 		}
 		executedSteps[i] = true
-	}
-
-	if totalSteps == 0 {
-		return &PipelineError{
-			Error: fmt.Errorf("step with name %s not found", stepToRun),
-			Step:  "",
-		}
 	}
 
 	return nil

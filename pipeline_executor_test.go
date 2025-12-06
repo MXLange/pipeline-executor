@@ -49,7 +49,7 @@ func TestPipelineExecutor(t *testing.T) {
 
 	err := pe.ExecutePipeline("test_pipeline", "", &arg1, &arg2)
 	if err != nil {
-		panic(err.Error.Error())
+		panic(err.Error())
 	}
 
 	expectedArg1 := "modified again"
@@ -68,7 +68,7 @@ func TestPipelineExecutor(t *testing.T) {
 
 	err = pe.ExecutePipeline("test_pipeline", "Step 2", &arg1, &arg2)
 	if err != nil {
-		panic(err.Error.Error())
+		panic(err.Error())
 	}
 
 	expectedArg1 = "modified again"
@@ -87,8 +87,8 @@ func TestPipelineExecutor(t *testing.T) {
 		t.Errorf("Expected error for non-existent step, but got nil")
 	}
 
-	if err.Error.Error() != "step with name Step Not Found not found" {
-		t.Errorf("Unexpected error message: %s", err.Error.Error())
+	if err.Error() != "step with name Step Not Found not found in pipeline test_pipeline" {
+		t.Errorf("Unexpected error message: %s", err.Error())
 	}
 
 	step2 = Step{
@@ -117,7 +117,7 @@ func TestPipelineExecutor(t *testing.T) {
 
 	err = pe.ExecutePipeline("test_pipeline", "Step 2", &arg1, &arg2)
 	if err != nil {
-		panic(err.Error.Error())
+		panic(err.Error())
 	}
 
 	expectedArg1 = "initial again"
@@ -136,8 +136,8 @@ func TestPipelineExecutor(t *testing.T) {
 		t.Errorf("Expected error for non-existent step, but got nil")
 	}
 
-	if err.Error.Error() != "step with name Step Not Found not found" {
-		t.Errorf("Unexpected error message: %s", err.Error.Error())
+	if err.Error() != "step with name Step Not Found not found in pipeline test_pipeline" {
+		t.Errorf("Unexpected error message: %s", err.Error())
 	}
 
 }

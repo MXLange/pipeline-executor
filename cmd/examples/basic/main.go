@@ -60,7 +60,7 @@ func main() {
 
 	err := pe.ExecutePipeline("example_pipeline", "", arg, intArg)
 	if err != nil {
-		panic(err.Error.Error())
+		panic(err.Error())
 	}
 
 	fmt.Printf("final value is -> %s\n", arg.Value)
