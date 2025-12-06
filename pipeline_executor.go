@@ -69,10 +69,7 @@ func (pe *Pipeline) executeStep(step Step, executedSteps map[int]bool, args ...a
 		}
 	}
 
-	if err := step.Action(args...); err != nil {
-		return err
-	}
-	return nil
+	return step.Action(args...)
 }
 
 func (pe *PipelineExecutor) ExecutePipeline(key, stepToRun string, args ...any) *PipelineError {
@@ -103,6 +100,7 @@ func (pe *PipelineExecutor) ExecutePipeline(key, stepToRun string, args ...any) 
 	for ; startIndex < len(pipeline.Steps); startIndex++ {
 		step := pipeline.Steps[startIndex]
 		if err := pipeline.executeStep(step, executedSteps, args...); err != nil {
+			err.Step = step.Name
 			return err
 		}
 		executedSteps[startIndex] = true
