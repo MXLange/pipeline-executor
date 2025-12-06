@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	pipelineexecutor "github.com/MXLange/pipelineexecutor"
+	pipelineexecutor "github.com/MXLange/pipeline-executor"
 )
 
 type ExStruct struct {
