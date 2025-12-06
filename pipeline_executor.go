@@ -100,16 +100,12 @@ func (pe *PipelineExecutor) ExecutePipeline(key, stepToRun string, args ...any) 
 
 	executedSteps := make(map[int]bool)
 
-	for i, step := range pipeline.Steps {
-
-		if i < startIndex {
-			continue
-		}
-
+	for ; startIndex < len(pipeline.Steps); startIndex++ {
+		step := pipeline.Steps[startIndex]
 		if err := pipeline.executeStep(step, executedSteps, args...); err != nil {
 			return err
 		}
-		executedSteps[i] = true
+		executedSteps[startIndex] = true
 	}
 
 	return nil
